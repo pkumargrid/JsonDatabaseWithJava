@@ -1,7 +1,8 @@
 package functionalities.server;
 
-import constants.Server;
-import exceptions.StatusException;
+
+import functionalities.constants.Server;
+import functionalities.exceptions.StatusException;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
