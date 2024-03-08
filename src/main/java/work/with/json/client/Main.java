@@ -4,8 +4,6 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import work.with.json.constants.Server;
 import work.with.json.converter.ObjectJsonMapper;
-
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;

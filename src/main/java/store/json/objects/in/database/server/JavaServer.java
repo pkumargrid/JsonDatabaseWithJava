@@ -3,11 +3,12 @@ package store.json.objects.in.database.server;
 
 import com.google.gson.JsonElement;
 import store.json.objects.in.database.client.Request;
-import store.json.objects.in.database.constants.Server;
 import store.json.objects.in.database.constants.Status;
 import store.json.objects.in.database.converter.JsonObjectMapper;
 import store.json.objects.in.database.converter.ObjectJsonMapper;
 import store.json.objects.in.database.database.DataHandler;
+import store.json.objects.in.database.database.FileRead;
+import store.json.objects.in.database.database.FileWriter;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -22,19 +23,15 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static java.lang.Integer.parseInt;
-
 public class JavaServer {
     private static final Object lock = new Object();
     private static final ReadWriteLock locker = new ReentrantReadWriteLock();
-
-    public static void connect(){
+    public static void connect(DataHandler dataHandler, FileRead fileRead, FileWriter fileWriter, int port){
         ExecutorService executorService = Executors.newCachedThreadPool();
-        DataHandler dataHandler = new DataHandler();
         Lock readLock = locker.readLock();
         Lock writeLock = locker.writeLock();
         System.out.println("Server started!");
-        try (ServerSocket server = new ServerSocket(parseInt(Server.PORT.value))) {
+        try (ServerSocket server = new ServerSocket(port)) {
             while(true){
                 try (
                         Socket socket = server.accept(); // accept a new client
@@ -46,6 +43,8 @@ public class JavaServer {
                         Request request = (Request) JsonObjectMapper.mapToObj(messageFromClient, Request.class);
                         ClientRequestHandler clientRequestHandler =
                                 new ClientRequestHandler(dataHandler, request, readLock, writeLock);
+                        clientRequestHandler.setFileWriter(fileWriter);
+                        clientRequestHandler.setFileRead(fileRead);
                         Future<?> future = executorService.submit(clientRequestHandler);
                         try {
                             future.get(); // This will block until the task completes or throws an exception
@@ -53,9 +52,7 @@ public class JavaServer {
                             if(!e.getMessage().contains("StatusException"))
                                 throw new Exception(e);
                             else{
-                                Response response = new Response(Status.ERROR.name(), null, "No such key");
-                                output.writeUTF(ObjectJsonMapper.mapToJson(response));
-                                continue;
+                                throw new RuntimeException(e);
                             }
                         }
                         JsonElement result = clientRequestHandler.getResult();

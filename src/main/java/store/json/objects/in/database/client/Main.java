@@ -3,9 +3,10 @@ package store.json.objects.in.database.client;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.google.gson.JsonElement;
-import converter.JsonElementConverter;
+
 import store.json.objects.in.database.constants.Server;
 import store.json.objects.in.database.converter.ClientFileReader;
+import store.json.objects.in.database.converter.JsonElementConverter;
 import store.json.objects.in.database.converter.ObjectJsonMapper;
 
 import java.io.DataInputStream;
@@ -18,7 +19,7 @@ import static java.lang.Integer.parseInt;
 public class Main {
 
     @Parameter(names = "-t")
-    private static String type;
+    static String type;
 
     @Parameter(names = "-k", converter = JsonElementConverter.class)
     private static JsonElement key;
@@ -34,7 +35,7 @@ public class Main {
                 .addObject(new Main())
                 .build()
                 .parse(args);
-        System.out.println("Client started!");
+//        System.out.println("Client started!");
         try (
                 Socket socket = new Socket(Server.ADDRESS.value,parseInt(Server.PORT.value));
                 DataInputStream input = new DataInputStream(socket.getInputStream());
@@ -45,7 +46,7 @@ public class Main {
             if(fileName != null){
                 json = ClientFileReader.read(fileName);
             }
-            System.out.println("Sent: " + json);
+//            System.out.println("Sent: " + json);
             output.writeUTF(json);
             String receivedMsg = input.readUTF();
             System.out.println("Received: " + receivedMsg);
